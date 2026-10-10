@@ -11,6 +11,7 @@ Changed:
 
 Fixed:
 - Frame times on Linux and Windows no longer jump backwards once per second.
+- `WindowAnimationFrameClock` now propagates exceptions thrown by the frame callback to the awaiting coroutine instead of leaking them to the browser event loop and suspending forever, and cancels the pending `requestAnimationFrame` when the awaiting coroutine is canceled.
 
 
 ## [2.2.0] - 2025-09-24

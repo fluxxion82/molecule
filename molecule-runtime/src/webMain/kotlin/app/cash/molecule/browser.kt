@@ -23,7 +23,8 @@ internal external val window: Window
 
 internal external interface Window {
   val performance: Performance
-  fun requestAnimationFrame(callback: (Double) -> Unit)
+  fun requestAnimationFrame(callback: (Double) -> Unit): Int
+  fun cancelAnimationFrame(handle: Int)
 }
 
 internal external val performance: Performance

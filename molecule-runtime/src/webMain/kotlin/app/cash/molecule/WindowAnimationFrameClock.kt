@@ -16,18 +16,19 @@
 package app.cash.molecule
 
 import androidx.compose.runtime.MonotonicFrameClock
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 public object WindowAnimationFrameClock : MonotonicFrameClock {
   override suspend fun <R> withFrameNanos(
     onFrame: (Long) -> R,
-  ): R = suspendCoroutine { continuation ->
-    window.requestAnimationFrame {
+  ): R = suspendCancellableCoroutine { continuation ->
+    val handle = window.requestAnimationFrame {
       val durationMillis = it.toLong()
       val durationNanos = durationMillis * 1_000_000
-      val result = onFrame(durationNanos)
-      continuation.resume(result)
+      // Propagate failures from onFrame to the awaiting coroutine rather than leaking them to the
+      // browser event loop and leaving the coroutine suspended forever.
+      continuation.resumeWith(runCatching { onFrame(durationNanos) })
     }
+    continuation.invokeOnCancellation { window.cancelAnimationFrame(handle) }
   }
 }
